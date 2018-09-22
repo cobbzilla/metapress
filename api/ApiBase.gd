@@ -1,7 +1,5 @@
 extends HTTPRequest
 
-onready var apiSession = api.session(self)
-
 var handler
 
 func api_init(handler):
