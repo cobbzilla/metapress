@@ -2,7 +2,7 @@
 
 [ext_resource path="res://screens/choose_auth/ChooseAuthScreen.gd" type="Script" id=1]
 
-[node name="ChooseAuthScreen" type="Node" index="0"]
+[node name="ChooseAuthScreen" type="Node"]
 
 script = ExtResource( 1 )
 _sections_unfolded = [ "Margin", "Rect" ]
