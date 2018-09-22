@@ -1,6 +1,6 @@
 [gd_scene format=2]
 
-[node name="GameBoardScreen" type="Node" index="0"]
+[node name="GameBoardScreen" type="Node"]
 
 [node name="Label" type="Label" parent="." index="0"]
 
