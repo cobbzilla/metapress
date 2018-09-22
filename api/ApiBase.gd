@@ -19,6 +19,8 @@ func api_callback (result, status, headers, body):
 				"err": parsed.error,
 				"description": parsed.error_string
 			}))
+	elif status == 0:
+		print("Server unreachable")
 	else:
 		print("error logging in: HTTP status {status}, response: {response}".format({
 			"status": status,
