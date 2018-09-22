@@ -11,7 +11,7 @@ config_version=3
 [application]
 
 config/name="metapress"
-run/main_scene="res://screens/ChooseAuthScreen.tscn"
+run/main_scene="res://screens/choose_auth/ChooseAuthScreen.tscn"
 config/icon="res://icon.png"
 
 [autoload]
