@@ -5,7 +5,7 @@
 [ext_resource path="res://screens/choose_room/RoomName.gd" type="Script" id=3]
 [ext_resource path="res://api/list_rooms/ListRoomsApi.tscn" type="PackedScene" id=4]
 
-[node name="ChooseRoomScreen" type="Node" index="0"]
+[node name="ChooseRoomScreen" type="Node"]
 
 script = ExtResource( 1 )
 

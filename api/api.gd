@@ -11,6 +11,9 @@ const USE_SSL = false
 var session
 var room
 
+func board():
+	return room.roomSettings.board.settings
+
 func base_uri():
 	return DEFAULT_API_BASE
 
