@@ -22,7 +22,7 @@ func api_callback (result, status, headers, body):
 	elif status == 0:
 		print("Server unreachable")
 	else:
-		print("error logging in: HTTP status {status}, response: {response}".format({
+		print("API error {status}: {response}".format({
 			"status": status,
 			"response": body.get_string_from_utf8()
 		}))
