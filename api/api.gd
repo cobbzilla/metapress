@@ -26,7 +26,7 @@ static func api_request_headers_get(http):
 	if has_api_token(apiSession):
 		return [api_token_header(apiSession)]
 	else:
-		return null
+		return []
 
 static func api_token_header(apiSession):
 	return str(HEADER_NAME_WL_API, ": ", apiSession.session.apiToken)
