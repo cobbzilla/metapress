@@ -33,7 +33,7 @@ anchor_left = 0.0
 anchor_top = 0.0
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 40.0
+margin_right = 83.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( 0, 0 )
 rect_clip_content = false
@@ -53,7 +53,7 @@ items = [  ]
 selected = -1
 script = ExtResource( 3 )
 
-[node name="ListRoomsApi" parent="VBoxContainer/RoomName" index="2" instance=ExtResource( 4 )]
+[node name="ListRoomsApi" parent="VBoxContainer/RoomName" index="1" instance=ExtResource( 4 )]
 
 [node name="JoinRoomButton" type="Button" parent="VBoxContainer" index="1"]
 
@@ -62,7 +62,7 @@ anchor_top = 0.0
 anchor_right = 0.0
 anchor_bottom = 0.0
 margin_top = 24.0
-margin_right = 40.0
+margin_right = 83.0
 margin_bottom = 44.0
 rect_pivot_offset = Vector2( 0, 0 )
 rect_clip_content = false
@@ -75,7 +75,10 @@ toggle_mode = false
 enabled_focus_mode = 2
 shortcut = null
 group = null
+text = "Start Game"
 flat = false
 align = 1
+
+[connection signal="pressed" from="VBoxContainer/JoinRoomButton" to="." method="_on_JoinRoomButton_pressed"]
 
 
