@@ -11,6 +11,13 @@ const USE_SSL = false
 var session
 var room
 
+# map of opponent_uuid -> number
+var opponentNumbers = {}
+func getOpponentNumber (id):
+	if !opponentNumbers.has(id):
+		opponentNumbers[id] = opponentNumbers.size()+1
+	return opponentNumbers[id]
+
 func board():
 	return room.roomSettings.board.settings
 
