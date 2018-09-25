@@ -10,6 +10,7 @@ var tileWidth
 var tileHeight
 var boardStartX = 0
 var boardStartY = 0
+var symbolTileSprite = preload("res://screens/components/symbol_tile.gd")
 
 func _ready():
 	viewportSize = get_viewport().size
@@ -118,11 +119,9 @@ func draw_tile (tile):
 		print(str("draw_tile: texturePath not found: ", tile.texturePath))
 	else:
 		# Texture file exists, draw tile
-		var uiTile = Sprite.new()
-		uiTile.centered = false
-		uiTile.position = tile.tilePos
-		var imageTexture = ImageTexture.new()
-		imageTexture.load(tile.texturePath)
-		uiTile.texture = imageTexture
-		uiTile.set("symbol", tile.symbol)
+		var uiTile = symbolTileSprite.new()
+		uiTile.init(tile, self)
 		add_child(uiTile)
+
+func select_tile(tile):
+	print(str("selected tile ", tile))
