@@ -1,7 +1,6 @@
 extends Node
 
 const TILE_PIXELS = 64
-const TRAY_HEIGHT = 64
 const PLAYER_BG_COLOR = 0xff0000
 const PALETTE = [0x00ff00, 0x0000ff, 0x00ffff, 0xaa0000, 0x00aa00, 0x0000aa]
 
@@ -16,32 +15,48 @@ func _ready():
 	viewportSize = get_viewport().size
 	board = api.board()
 
-	tileWidth = min(int(viewportSize.x / TILE_PIXELS), board.width)
-	tileHeight = min(int((viewportSize.y-TRAY_HEIGHT) / TILE_PIXELS), board.length)
+	# determine how many tiles we can show horizontally, and the X coordinate where the board should start
+	if board.has('width'):
+		tileWidth = min(int(viewportSize.x / TILE_PIXELS), board.width)
+		if tileWidth == board.width:
+			boardStartX = (viewportSize.x - (tileWidth * TILE_PIXELS))/2
+	else:
+		tileWidth = int(viewportSize.x / TILE_PIXELS)
 
-	# If the tileWidth/tileHeight is the entire size of the board, align it properly within the viewport,
-	# otherwise it will appear in the top-left
-	if tileWidth == board.width:
-		boardStartX = (viewportSize.x - (tileWidth * TILE_PIXELS))/2
-	if tileHeight == board.length:
-		boardStartY = TRAY_HEIGHT + 10
-	if boardStartY < 0:
-		# should never happen, but just in case
-		boardStartY = 0
-
+	# determine how many tiles we can show vertically, and the Y coordinate where the board should start
+	if board.has('length'):
+		tileHeight = min(int((viewportSize.y) / TILE_PIXELS), board.length)
+		if tileHeight == board.length:
+			boardStartY = (viewportSize.y - (tileHeight * TILE_PIXELS))/2
+		if boardStartY < 0:
+			# should never happen, but just in case
+			boardStartY = 0
+	else:
+		tileHeight = int(viewportSize.y / TILE_PIXELS)
+	print("tileHeight={tileHeight}, viewportSize.y={y}, boardStartY={boardStartY}".format({
+		"tileHeight": tileHeight,
+		"y": viewportSize.y,
+		"boardStartY": boardStartY
+	}))
+	print("tileWidth={tileWidth}, viewportSize.x={x}, boardStartX={boardStartX}".format({
+		"tileWidth": tileWidth,
+		"x": viewportSize.x,
+		"boardStartX": boardStartX
+	}))
 	$ViewBoardApi.api_init(self)
-	$ViewBoardApi.view_board(0, tileWidth, 0, tileHeight)
+	$ViewBoardApi.view_board(0, tileHeight-1, 0, tileWidth-1)
 
 func handle_api_response (view):
 	var tilePos = Vector2(boardStartX, boardStartY)
 	var tileIndex = Vector2(0, 0)
 	var tileImageRequests = {}
 	for row in view.tiles:
-		if tileIndex.y > board.length:
-			break
+		print(str("drawing row: ", row))
+#		if tileIndex.y >= tileHeight:
+#			break
 		for tile in row:
-			if tileIndex.x > board.width:
-				break
+#			if tileIndex.x >= tileWidth:
+#				break
 			# place a sprite in the scene for each tile
 			tile = prep_tile(tile)
 			if !tileImageRequests.has(tile.texturePath):

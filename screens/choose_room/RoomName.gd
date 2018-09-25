@@ -7,4 +7,3 @@ func _ready():
 func handle_api_response (rooms):
 	for room in rooms:
 		add_item(room.name)
-		print("found room: {room}".format({ "room": room.name }))
