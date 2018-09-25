@@ -1,6 +1,7 @@
 extends Node
 
 const TILE_PIXELS = 64
+const TRAY_HEIGHT = 64
 const PLAYER_BG_COLOR = 0xff0000
 const PALETTE = [0x00ff00, 0x0000ff, 0x00ffff, 0xaa0000, 0x00aa00, 0x0000aa]
 
@@ -8,19 +9,31 @@ var viewportSize
 var board
 var tileWidth
 var tileHeight
+var boardStartX = 0
+var boardStartY = 0
 
 func _ready():
 	viewportSize = get_viewport().size
 	board = api.board()
 
-	tileWidth = min(int(viewportSize.x / TILE_PIXELS) + 10, board.width)
-	tileHeight = min(int(viewportSize.y / TILE_PIXELS) + 10, board.length)
+	tileWidth = min(int(viewportSize.x / TILE_PIXELS), board.width)
+	tileHeight = min(int((viewportSize.y-TRAY_HEIGHT) / TILE_PIXELS), board.length)
+
+	# If the tileWidth/tileHeight is the entire size of the board, align it properly within the viewport,
+	# otherwise it will appear in the top-left
+	if tileWidth == board.width:
+		boardStartX = (viewportSize.x - (tileWidth * TILE_PIXELS))/2
+	if tileHeight == board.length:
+		boardStartY = TRAY_HEIGHT + 10
+	if boardStartY < 0:
+		# should never happen, but just in case
+		boardStartY = 0
 
 	$ViewBoardApi.api_init(self)
 	$ViewBoardApi.view_board(0, tileWidth, 0, tileHeight)
 
 func handle_api_response (view):
-	var tilePos = Vector2(0, 0)
+	var tilePos = Vector2(boardStartX, boardStartY)
 	var tileIndex = Vector2(0, 0)
 	var tileImageRequests = {}
 	for row in view.tiles:
@@ -39,7 +52,7 @@ func handle_api_response (view):
 			tileIndex.x += 1
 		tilePos.y += TILE_PIXELS
 		tileIndex.y += 1
-		tilePos.x = 0
+		tilePos.x = boardStartX
 		tileIndex.x = 0
 	for texturePath in tileImageRequests:
 		download_and_draw_tiles(texturePath, tileImageRequests[texturePath])
