@@ -18,31 +18,17 @@ func _ready():
 	# determine how many tiles we can show horizontally, and the X coordinate where the board should start
 	if board.has('width'):
 		tileWidth = min(int(viewportSize.x / TILE_PIXELS), board.width)
-		if tileWidth == board.width:
-			boardStartX = (viewportSize.x - (tileWidth * TILE_PIXELS))/2
 	else:
 		tileWidth = int(viewportSize.x / TILE_PIXELS)
+	boardStartX = (viewportSize.x - (tileWidth * TILE_PIXELS))/2
 
 	# determine how many tiles we can show vertically, and the Y coordinate where the board should start
 	if board.has('length'):
 		tileHeight = min(int((viewportSize.y) / TILE_PIXELS), board.length)
-		if tileHeight == board.length:
-			boardStartY = (viewportSize.y - (tileHeight * TILE_PIXELS))/2
-		if boardStartY < 0:
-			# should never happen, but just in case
-			boardStartY = 0
 	else:
 		tileHeight = int(viewportSize.y / TILE_PIXELS)
-	print("tileHeight={tileHeight}, viewportSize.y={y}, boardStartY={boardStartY}".format({
-		"tileHeight": tileHeight,
-		"y": viewportSize.y,
-		"boardStartY": boardStartY
-	}))
-	print("tileWidth={tileWidth}, viewportSize.x={x}, boardStartX={boardStartX}".format({
-		"tileWidth": tileWidth,
-		"x": viewportSize.x,
-		"boardStartX": boardStartX
-	}))
+	boardStartY = (viewportSize.y - (tileHeight * TILE_PIXELS))/2
+
 	$ViewBoardApi.api_init(self)
 	$ViewBoardApi.view_board(0, tileHeight-1, 0, tileWidth-1)
 
