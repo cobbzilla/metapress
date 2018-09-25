@@ -6,11 +6,20 @@ const PALETTE = [0x00ff00, 0x0000ff, 0x00ffff, 0xaa0000, 0x00aa00, 0x0000aa]
 
 var viewportSize
 var board
+var viewStartIndex = Vector2()
+var viewEndIndex = Vector2()
 var tileWidth
 var tileHeight
 var boardStartX = 0
 var boardStartY = 0
 var symbolTileSprite = preload("res://screens/components/symbol_tile.gd")
+
+var scrollable = {
+	"up": false,
+	"down": false,
+	"left": false,
+	"right": false
+}
 
 func _ready():
 	viewportSize = get_viewport().size
@@ -30,21 +39,41 @@ func _ready():
 		tileHeight = int(viewportSize.y / TILE_PIXELS)
 	boardStartY = (viewportSize.y - (tileHeight * TILE_PIXELS))/2
 
+	set_scrollable(Vector2(0, tileHeight-1), Vector2(0, tileWidth-1))
+
 	$ViewBoardApi.api_init(self)
 	$ViewBoardApi.view_board(0, tileHeight-1, 0, tileWidth-1)
 
+func set_scrollable(start, end):
+	if board.has('width'):
+		if start.x > 0:
+			scrollable.left = true
+		if end.x < board.width:
+			scrollable.right = true
+	else:
+		scrollable.left = true
+		scrollable.right = true
+	if board.has('length'):
+		if start.y > 0:
+			scrollable.down = true
+		if end.y < board.length:
+			scrollable.up = true
+	else:
+		scrollable.down = true
+		scrollable.up = true
+
 func handle_api_response (view):
+	viewStartIndex.x = view.x1
+	viewStartIndex.y = view.y1
+	viewEndIndex.x = view.x2
+	viewEndIndex.y = view.y2
+	set_scrollable(viewStartIndex, viewEndIndex)
 	var tilePos = Vector2(boardStartX, boardStartY)
 	var tileIndex = Vector2(0, 0)
 	var tileImageRequests = {}
 	for row in view.tiles:
 		print(str("drawing row: ", row))
-#		if tileIndex.y >= tileHeight:
-#			break
 		for tile in row:
-#			if tileIndex.x >= tileWidth:
-#				break
-			# place a sprite in the scene for each tile
 			tile = prep_tile(tile)
 			if !tileImageRequests.has(tile.texturePath):
 				tileImageRequests[tile.texturePath] = []
@@ -125,3 +154,8 @@ func draw_tile (tile):
 
 func select_tile(tile):
 	print(str("selected tile ", tile))
+
+func _process(delta):
+	# Called every frame. Delta is time since last frame.
+	# Update game logic here.
+	pass
