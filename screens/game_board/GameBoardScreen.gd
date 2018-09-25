@@ -9,8 +9,6 @@ var board
 var tileWidth
 var tileHeight
 
-var tileImageRequests = {}
-
 func _ready():
 	viewportSize = get_viewport().size
 	board = api.board()
@@ -24,75 +22,67 @@ func _ready():
 func handle_api_response (view):
 	var tilePos = Vector2(0, 0)
 	var tileIndex = Vector2(0, 0)
+	var tileImageRequests = {}
 	for row in view.tiles:
-		print("board row size: {size}".format({ "size": row.size() }))
 		if tileIndex.y > board.length:
 			break
 		for tile in row:
 			if tileIndex.x > board.width:
 				break
 			# place a sprite in the scene for each tile
-			draw_tile(tile, tilePos)
-			print("board tile: {tile}".format({ "tile": tile }))
+			tile = prep_tile(tile)
+			if !tileImageRequests.has(tile.texturePath):
+				tileImageRequests[tile.texturePath] = []
+			tile.tilePos = tilePos
+			tileImageRequests[tile.texturePath].append(tile)
 			tilePos.x += TILE_PIXELS
 			tileIndex.x += 1
 		tilePos.y += TILE_PIXELS
 		tileIndex.y += 1
 		tilePos.x = 0
 		tileIndex.x = 0
+	for texturePath in tileImageRequests:
+		download_and_draw_tiles(texturePath, tileImageRequests[texturePath])
 
-func draw_tile (tile, tilePos):
+func prep_tile(tile):
 	var suffix
-	var fgColor = 0x000000
-	var bgColor
+	tile.fgColor = 0x000000
 	if !tile.has('owner'):
 		suffix = "_unclaimed"
-		bgColor = 0xffffff
+		tile.bgColor = 0xffffff
 	elif tile.owner == api.session.id:
 		suffix = "_p0"
-		bgColor = PLAYER_BG_COLOR
+		tile.bgColor = PLAYER_BG_COLOR
 	else:
 		suffix = str("_p", api.getOpponentNumber(tile.owner))
-		bgColor = PALETTE[(api.getOpponentNumber(tile.owner)-1) % PALETTE.size()]
+		tile.bgColor = PALETTE[(api.getOpponentNumber(tile.owner)-1) % PALETTE.size()]
 
-	var texturePath = "user://images_tiles_{symbol}{suffix}.png".format({
+	tile.texturePath = "user://images_tiles_{symbol}{suffix}.png".format({
 		"symbol": tile.symbol,
 		"suffix": suffix
 	})
+	return tile
+
+func download_and_draw_tiles(texturePath, tiles):
+	var tile = tiles[0]
 	var textureFile = File.new()
 	if !textureFile.file_exists(texturePath):
-		# Texture file does not exist. Should we download it?
-		var request = {
+		# Texture file does not exist. Download it
+		var dl = HTTPRequest.new()
+		dl.connect("request_completed", self, "handle_download_then_draw_tiles", [texturePath, tiles, dl])
+		add_child(dl)
+		api.post(dl, "alphabets/{symbolSet}/tile.png".format({
+			"symbolSet": api.room.roomSettings.symbolSet.name
+		}), {
 			"symbol": tile.symbol,
-			"fgColor": fgColor,
-			"bgColor": bgColor
-		}
-		var requestJson = JSON.print(request)
-		if tileImageRequests.has(requestJson):
-			# Someone else already is already downloading, just wait for them
-			# call_deferred("wait_for_download_then_draw_tile", tile, tilePos, texturePath)
-			pass
-		else:
-			# We are first, download the tile image
-			tileImageRequests[requestJson] = requestJson
-			var dl = HTTPRequest.new()
-			dl.connect("request_completed", self, "handle_download_then_draw_tile", [tile, tilePos, texturePath, requestJson, dl])
-			add_child(dl)
-			api.post(dl, "alphabets/{symbolSet}/tile.png".format({
-				"symbolSet": api.room.roomSettings.symbolSet.name
-			}), request)
+			"fgColor": tile.fgColor,
+			"bgColor": tile.bgColor
+		})
 	else:
-		# Texture file exists, draw tile
-		var uiTile = Sprite.new()
-		uiTile.centered = false
-		uiTile.position = tilePos
-		var imageTexture = ImageTexture.new()
-		imageTexture.load(texturePath)
-		uiTile.texture = imageTexture
-		uiTile.set("symbol", tile.symbol)
-		add_child(uiTile)
+		# Texture file exists. Draw tiles
+		draw_tiles(tiles)
 
-func handle_download_then_draw_tile(result, status, headers, body, tile, tilePos, texturePath, requestJson, dl):
+func handle_download_then_draw_tiles(result, status, headers, body, texturePath, tiles, dl):
 	if status != 200:
 		print("handle_download_then_draw_tile: error, HTTP status was {status}".format({"status": status}))
 		return
@@ -101,13 +91,24 @@ func handle_download_then_draw_tile(result, status, headers, body, tile, tilePos
 		textureFile.open(texturePath, File.WRITE)
 		textureFile.store_buffer(PoolByteArray(body))
 		textureFile.close()
-	tileImageRequests.erase(requestJson)
 	remove_child(dl)
-	draw_tile(tile, tilePos)
+	draw_tiles(tiles)
 
-func wait_for_download_then_draw_tile (tile, tilePos, texturePath):
+func draw_tiles(tiles):
+	for tile in tiles:
+		draw_tile(tile)
+
+func draw_tile (tile):
 	var textureFile = File.new()
-	if !textureFile.file_exists(texturePath):
-		call_deferred("wait_for_download_then_draw_tile", tile, tilePos, texturePath)
+	if !textureFile.file_exists(tile.texturePath):
+		print(str("draw_tile: texturePath not found: ", tile.texturePath))
 	else:
-		draw_tile(tile, tilePos)
+		# Texture file exists, draw tile
+		var uiTile = Sprite.new()
+		uiTile.centered = false
+		uiTile.position = tile.tilePos
+		var imageTexture = ImageTexture.new()
+		imageTexture.load(tile.texturePath)
+		uiTile.texture = imageTexture
+		uiTile.set("symbol", tile.symbol)
+		add_child(uiTile)
